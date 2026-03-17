@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     if (__echo) {
       return Response.json({
         success: true,
-        echo: { route: "_diagnostic/findCustomerIdentityForCrmJobs", parsed: { __echo, limit } }
+        echo: { route: "_diagnostic/externalJobIdExistenceProbe", parsed: { __echo, limit } }
       });
     }
 
@@ -63,57 +63,66 @@ Deno.serve(async (req) => {
       .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
       .slice(0, limit);
 
-    const needsIdentity = jobs.filter((j) => !safeText(j.customerName));
+    const probeResults = [];
+    const summary = {
+      scanned: jobs.length,
+      hasExternalJobId: 0,
+      normalReadOk: 0,
+      serviceReadOk: 0,
+      serviceOk_normalFail: 0,
+      bothFail: 0
+    };
 
-    const results = [];
-    for (const j of needsIdentity) {
-      const sources = {};
+    for (const job of jobs) {
+      if (!job.externalJobId) continue;
 
-      // Search Job
-      if (j.externalJobId) {
-        try {
-          const linkedJob = await base44.entities.Job.read(j.externalJobId);
-          sources.linkedJob = safeText(linkedJob?.customerName) || null;
-        } catch {}
-      }
+      summary.hasExternalJobId++;
 
-      // Search CRMContact
-      if (j.primaryContactId) {
-        try {
-          const contact = await base44.entities.CRMContact.read(j.primaryContactId);
-          const firstName = safeText(contact?.firstName);
-          const lastName = safeText(contact?.lastName);
-          sources.contact = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || safeText(contact?.email) || null);
-        } catch {}
-      }
+      let normalOk = false;
+      let serviceOk = false;
+      let serviceCustomerName = null;
 
-      // Search CRMAccount
-      if (j.accountId) {
-        try {
-          const account = await base44.entities.CRMAccount.read(j.accountId);
-          sources.account = safeText(account?.name) || null;
-        } catch {}
-      }
+      // Try normal read
+      try {
+        const normalJob = await base44.entities.Job.read(job.externalJobId);
+        normalOk = true;
+      } catch {}
 
-      const bestCandidate = Object.values(sources).find(Boolean) || null;
+      // Try service role read
+      try {
+        const serviceJob = await base44.asServiceRole.entities.Job.read(job.externalJobId);
+        serviceOk = true;
+        serviceCustomerName = safeText(serviceJob?.customerName);
+      } catch {}
 
-      results.push({
-        jobId: j.id,
-        jobNumber: j.jobNumber || null,
-        currentName: j.customerName || null,
-        candidateSources: sources,
-        bestCandidate
+      // Classify
+      if (normalOk) summary.normalReadOk++;
+      if (serviceOk) summary.serviceReadOk++;
+      if (serviceOk && !normalOk) summary.serviceOk_normalFail++;
+      if (!serviceOk && !normalOk) summary.bothFail++;
+
+      probeResults.push({
+        crmJobId: job.id,
+        jobNumber: job.jobNumber || null,
+        externalJobId: job.externalJobId,
+        normalOk,
+        serviceOk,
+        serviceCustomerName
       });
     }
+
+    // Return first 25 samples
+    const samples = probeResults.slice(0, 25);
 
     return Response.json({
       success: true,
       context: ctx,
-      summary: { scanned: jobs.length, needsIdentity: needsIdentity.length, resolved: results.length },
-      results
+      summary,
+      samples,
+      fullResults: probeResults.length <= 25 ? probeResults : null
     });
   } catch (e) {
-    console.error("[_diagnostic/findCustomerIdentityForCrmJobs] error", e);
+    console.error("[_diagnostic/externalJobIdExistenceProbe] error", e);
     return Response.json({ success: false, error: e?.message || String(e) }, { status: 500 });
   }
 });

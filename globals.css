@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* CostPilot Brand Palette (from logo)                              */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --brand-primary: #006FBA;
+    --brand-primary-hover: #005EA5;
+    --brand-primary-active: #023262;
+
+    --brand-accent: #52AE22;
+    --brand-accent-hover: #3B8D3E;
+
+    --brand-navy: #023262;
+    --brand-navy-deep: #012653;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* Neutrals                                                          */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --neutral-0: #FFFFFF;
+    --neutral-100: #CBD2D4;
+    --neutral-950: #03070A;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* Semantic (map to brand)                                           */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --success: #52AE22;
+    --success-hover: #3B8D3E;
+    --info: #006FBA;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* High-contrast text                                                */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --text-light: #F8FAFC;
+    --text-dark: #0F172A;
+    --muted-light: #334155;
+    --muted-dark: #CBD2D4;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* Surfaces                                                          */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --bg-page-dark: #03070A;
+    --bg-card-dark: #012653;
+    --bg-glass-dark: rgba(1, 38, 83, 0.72);
+    --border-dark: rgba(203, 210, 212, 0.28);
+
+    --bg-page-light: #F8FAFC;
+    --bg-card-light: #FFFFFF;
+    --border-light: #CBD2D4;
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* Shadcn/UI compatibility tokens                                    */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 207 100% 37%;           /* #006FBA */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 207 100% 37%;              /* #006FBA */
+    --radius: 0.5rem;
+    --chart-1: 207 100% 37%;
+    --chart-2: 93 55% 40%;
+    --chart-3: 0 0% 63%;
+    --chart-4: 207 82% 29%;
+    --chart-5: 93 45% 32%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 207 100% 37%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars while maintaining functionality */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* CostPilot Gradient Presets                                        */
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .gradient-header {
+    background: linear-gradient(135deg, #006FBA 0%, #005EA5 50%, #023262 100%);
+  }
+
+  .gradient-success {
+    background: linear-gradient(135deg, #52AE22 0%, #3B8D3E 100%);
+  }
+
+  .gradient-dark {
+    background: linear-gradient(135deg, #012653 0%, #03070A 100%);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* Brand Color Utilities                                             */
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .bg-brand-primary {
+    background-color: var(--brand-primary);
+  }
+
+  .bg-brand-accent {
+    background-color: var(--brand-accent);
+  }
+
+  .text-brand-primary {
+    color: var(--brand-primary);
+  }
+
+  .text-brand-accent {
+    color: var(--brand-accent);
+  }
+
+  .border-brand-primary {
+    border-color: var(--brand-primary);
+  }
+
+  .ring-brand-primary {
+    --tw-ring-color: var(--brand-primary);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* Modern Effects (Glows + Aura)                                     */
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .header-aura {
+    background-image: radial-gradient(70% 60% at 20% 0%, rgba(0, 111, 186, 0.45) 0%, rgba(0, 94, 165, 0.22) 40%, rgba(0, 0, 0, 0) 70%);
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .glow-blue-soft {
+    box-shadow: 0 0 22px rgba(0, 111, 186, 0.25);
+  }
+
+  .glow-blue-med {
+    box-shadow: 0 0 32px rgba(0, 111, 186, 0.35);
+  }
+
+  .glow-green-soft {
+    box-shadow: 0 0 22px rgba(82, 174, 34, 0.22);
+  }
+
+  .text-glow-blue {
+    filter: drop-shadow(0 0 10px rgba(0, 111, 186, 0.25));
+  }
+
+  .text-glow-green {
+    filter: drop-shadow(0 0 10px rgba(82, 174, 34, 0.22));
+  }
+
+  .lift-hover {
+    transition: transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .lift-hover:hover {
+    transform: translateY(-1px);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  /* Dark Text Hierarchy (Readability Fix)                            */
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .text-dark-strong {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .text-dark {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .text-dark-muted {
+    color: rgba(203, 210, 212, 0.72);
+  }
+
+  .text-dark-faint {
+    color: rgba(203, 210, 212, 0.58);
+  }
+}
+
+@layer base {
+  /* Allow pull-to-refresh on main content, disable on UI chrome */
+  html {
+    overscroll-behavior-y: contain;
+  }
+  
+  body {
+    overscroll-behavior: none;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Enable overscroll on main scrollable content for pull-to-refresh */
+  main, [data-scroll-container] {
+    overscroll-behavior-y: auto;
+  }
+
+  /* Auto dark mode based on system preference */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 207 100% 37%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --secondary: 217.2 32.6% 17.5%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 212.7 26.8% 83.9%;
+    }
+  }
+}
+
+@layer components {
+  button, a, [role="tab"] {
+    @apply select-none;
+  }
+
+  /* Prevent accidental text highlighting on mobile */
+  [data-card-header], .badge, [data-badge] {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Allow text selection in content areas */
+  textarea, input, [contenteditable], [data-allow-select] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}

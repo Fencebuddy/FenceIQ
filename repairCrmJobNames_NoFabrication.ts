@@ -5,6 +5,31 @@ function safeText(v) {
   return s.length ? s : null;
 }
 
+function isPlaceholderCustomerName(v) {
+  const s = safeText(v);
+  if (!s) return false;
+  if (/^customer\s+for\s+j-/i.test(s)) return true;
+  return false;
+}
+
+function computeCustomerNameFromJobLike(obj) {
+  const direct = safeText(obj?.customerName);
+  if (direct) return direct;
+
+  const first = safeText(obj?.firstName);
+  const last = safeText(obj?.lastName);
+  const full = safeText([first, last].filter(Boolean).join(" "));
+  if (full) return full;
+
+  const email = safeText(obj?.email);
+  if (email) return email;
+
+  const phone = safeText(obj?.phone);
+  if (phone) return phone;
+
+  return null;
+}
+
 async function resolveCompanyContext({ base44, req }) {
   const headerCompanyKey = req.headers.get("x-company-id");
   if (headerCompanyKey) {
@@ -45,12 +70,13 @@ Deno.serve(async (req) => {
 
     const payload = await req.json().catch(() => ({}));
     const __echo = payload?.__echo === true;
+    const dryRun = payload?.dryRun !== false;
     const limit = Number.isFinite(Number(payload?.limit)) ? Math.max(1, Math.min(1000, Number(payload.limit))) : 200;
 
     if (__echo) {
       return Response.json({
         success: true,
-        echo: { route: "_diagnostic/findCustomerIdentityForCrmJobs", parsed: { __echo, limit } }
+        echo: { route: "_repair/repairCrmJobNames_NoFabrication", parsed: { __echo, dryRun, limit } }
       });
     }
 
@@ -63,57 +89,70 @@ Deno.serve(async (req) => {
       .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
       .slice(0, limit);
 
-    const needsIdentity = jobs.filter((j) => !safeText(j.customerName));
+    // Detect jobs that need repair: missing, "Unknown Customer", or placeholder pattern
+    const needsRepair = jobs.filter((j) => {
+      const name = safeText(j.customerName);
+      return !name || name === "Unknown Customer" || isPlaceholderCustomerName(name);
+    });
+    let updated = 0;
+    let stillMissing = 0;
+    const idsToUpdate = [];
 
-    const results = [];
-    for (const j of needsIdentity) {
-      const sources = {};
+    for (const j of needsRepair) {
+      let candidate = null;
 
-      // Search Job
-      if (j.externalJobId) {
+      if (!candidate && j.primaryContactId) {
         try {
-          const linkedJob = await base44.entities.Job.read(j.externalJobId);
-          sources.linkedJob = safeText(linkedJob?.customerName) || null;
+          const c = await base44.entities.CRMContact.read(j.primaryContactId);
+          candidate = computeCustomerNameFromJobLike(c);
+        } catch {}
+      }
+      if (!candidate && j.accountId) {
+        try {
+          const a = await base44.entities.CRMAccount.read(j.accountId);
+          candidate = computeCustomerNameFromJobLike(a) || safeText(a?.name);
+        } catch {}
+      }
+      if (!candidate && j.externalJobId) {
+        try {
+          const job = await base44.entities.Job.read(j.externalJobId);
+          candidate = computeCustomerNameFromJobLike(job);
         } catch {}
       }
 
-      // Search CRMContact
-      if (j.primaryContactId) {
-        try {
-          const contact = await base44.entities.CRMContact.read(j.primaryContactId);
-          const firstName = safeText(contact?.firstName);
-          const lastName = safeText(contact?.lastName);
-          sources.contact = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || safeText(contact?.email) || null);
-        } catch {}
+      if (!candidate) {
+        candidate = "Unknown Customer";
       }
 
-      // Search CRMAccount
-      if (j.accountId) {
-        try {
-          const account = await base44.entities.CRMAccount.read(j.accountId);
-          sources.account = safeText(account?.name) || null;
-        } catch {}
+      if (candidate) {
+        idsToUpdate.push({ id: j.id, customerName: candidate });
+        if (!dryRun) {
+          await base44.asServiceRole.entities.CRMJob.update(j.id, {
+            customerName: candidate,
+            nameStatus: candidate === "Unknown Customer" ? "NEEDS_REPAIR" : "RESOLVED",
+            nameLastUpdatedAt: new Date().toISOString()
+          });
+        }
+        updated += dryRun ? 0 : 1;
+      } else {
+        stillMissing += 1;
       }
-
-      const bestCandidate = Object.values(sources).find(Boolean) || null;
-
-      results.push({
-        jobId: j.id,
-        jobNumber: j.jobNumber || null,
-        currentName: j.customerName || null,
-        candidateSources: sources,
-        bestCandidate
-      });
     }
 
     return Response.json({
       success: true,
       context: ctx,
-      summary: { scanned: jobs.length, needsIdentity: needsIdentity.length, resolved: results.length },
-      results
+      summary: {
+        scanned: jobs.length,
+        needsRepair: needsRepair.length,
+        updated,
+        stillMissing,
+        dryRun
+      },
+      idsToUpdate: dryRun ? idsToUpdate : []
     });
   } catch (e) {
-    console.error("[_diagnostic/findCustomerIdentityForCrmJobs] error", e);
+    console.error("[_repair/repairCrmJobNames_NoFabrication] error", e);
     return Response.json({ success: false, error: e?.message || String(e) }, { status: 500 });
   }
 });
